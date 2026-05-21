@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}故事模式 - Tavern Lite{% endblock %}
+
+{% block extra_style %}
+<style>
+    .stories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .story-card {
+        background: var(--white-card);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        padding: 1.5rem;
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+
+    .story-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .story-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary-light);
+    }
+
+    .story-card:hover::before {
+        opacity: 1;
+    }
+
+    .story-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .story-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-lg);
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .story-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-text);
+    }
+
+    .story-keywords {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .keyword-tag {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8125rem;
+    }
+
+    .story-desc {
+        font-size: 0.9375rem;
+        color: var(--gray-500);
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+
+    .story-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .story-npc-count {
+        font-size: 0.875rem;
+        color: var(--gray-400);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-play {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: #fff;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .btn-delete {
+        background: transparent;
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>故事模式</h1>
+    <a href="{{ url_for('story.new_story') }}" class="btn btn-ai">
+        ✨ 创建新故事
+    </a>
+</div>
+
+{% if not stories %}
+    <div class="empty-state">
+        <div class="empty-icon">📖</div>
+        <h3 style="margin-bottom: 0.5rem;">还没有故事</h3>
+        <p style="color: var(--gray-500); margin-bottom: 1.5rem;">创建你的第一个故事，开始冒险吧！</p>
+        <a href="{{ url_for('story.new_story') }}" class="btn btn-ai">✨ 创建新故事</a>
+    </div>
+{% else %}
+    <div class="stories-grid">
+        {% for story in stories %}
+        <div class="story-card" style="position: relative;">
+            <div class="story-header">
+                <div class="story-icon">📖</div>
+                <div>
+                    <h3 class="story-title">{{ story.name }}</h3>
+                </div>
+            </div>
+            <div class="story-keywords">
+                {% for kw in story.keywords.split(',')[:5] %}
+                <span class="keyword-tag">{{ kw.strip() }}</span>
+                {% endfor %}
+            </div>
+            <p class="story-desc">{{ story.world_setting[:100] }}...</p>
+            <div class="story-meta">
+                <span class="story-npc-count">👥 {{ story.npcs|length }} 个角色</span>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('story.play_story', story_id=story.id) }}" class="btn-play">开始游玩</a>
+                    <form action="{{ url_for('story.delete_story_route', story_id=story.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn-delete" onclick="return confirm('确定删除这个故事吗？')">删除</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

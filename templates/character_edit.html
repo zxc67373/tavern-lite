@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}{% if character %}编辑角色{% else %}新建角色{% endif %} - Tavern Lite{% endblock %}
+
+{% block extra_style %}
+<style>
+    .edit-card {
+        background: var(--white-card);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        padding: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-label .required {
+        color: var(--danger);
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        transition: var(--transition);
+        background: var(--white-card);
+        color: var(--dark-text);
+    }
+
+    [data-theme="dark"] .form-input {
+        background: var(--gray-100);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-hint {
+        font-size: 0.875rem;
+        color: var(--gray-400);
+        margin-top: 0.375rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: #fff;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-cancel {
+        display: inline-block;
+        padding: 0.75rem 2rem;
+        background: var(--gray-100);
+        color: var(--gray-600);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    [data-theme="dark"] .btn-cancel {
+        background: var(--gray-200);
+        color: var(--gray-100);
+        border-color: var(--gray-400);
+    }
+
+    .btn-cancel:hover {
+        background: var(--gray-200);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>{% if character %}编辑角色{% else %}新建角色{% endif %}</h1>
+
+<form method="POST" action="{% if character %}{{ url_for('character.update_character', char_id=character.id) }}{% else %}{{ url_for('character.create_character') }}{% endif %}">
+    <div class="edit-card">
+        <div class="form-group">
+            <label class="form-label">
+                角色名称 <span class="required">*</span>
+            </label>
+            <input type="text" name="name" value="{{ character.name if character else '' }}" required class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">角色描述</label>
+            <textarea name="description" rows="3" class="form-input" style="resize: vertical;">{{ character.description if character else '' }}</textarea>
+            <div class="form-hint">���色的背景故事、身份等</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">性格特征</label>
+            <textarea name="personality" rows="2" class="form-input" style="resize: vertical;">{{ character.personality if character else '' }}</textarea>
+            <div class="form-hint">角色的性格特点、说话风格等</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">对话场景</label>
+            <textarea name="scenario" rows="2" class="form-input" style="resize: vertical;">{{ character.scenario if character else '' }}</textarea>
+            <div class="form-hint">对话发生的场景设定</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">系统提示词</label>
+            <textarea name="system_prompt" rows="3" class="form-input" style="resize: vertical;">{{ character.system_prompt if character else '' }}</textarea>
+            <div class="form-hint">更精细的角色设定，会覆写上述字段</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">开场白</label>
+            <textarea name="first_message" rows="3" class="form-input" style="resize: vertical;">{{ character.first_message if character else '' }}</textarea>
+            <div class="form-hint">新对话开始时，角色的第一条消息</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">示例对话</label>
+            <textarea name="example_messages" rows="4" class="form-input" style="resize: vertical;">{{ character.example_messages if character else '' }}</textarea>
+            <div class="form-hint">给 AI 参考的对话示例，格式：user: xxx\nassistant: xxx</div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">保存</button>
+            <a href="{{ url_for('character.index') }}" class="btn-cancel">取消</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

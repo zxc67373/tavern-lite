@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}创建新故事 - Tavern Lite{% endblock %}
+
+{% block extra_style %}
+<style>
+    .create-card {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    .page-intro {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-intro h1 {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .keywords-hint {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 1px solid #bae6fd;
+        border-radius: var(--radius-lg);
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .keywords-hint h4 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #0369a1;
+        margin-bottom: 0.75rem;
+    }
+
+    .keywords-hint ul {
+        margin: 0;
+        padding-left: 1.25rem;
+        color: #075985;
+        font-size: 0.875rem;
+    }
+
+    .example-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .example-tag {
+        background: var(--white-card);
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8125rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .example-tag:hover {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.95);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .loading-overlay.active {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+        margin-top: 1.5rem;
+        font-size: 1.125rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+
+    .loading-subtext {
+        margin-top: 0.5rem;
+        font-size: 0.9375rem;
+        color: var(--gray-500);
+    }
+
+    [data-theme="dark"] .keywords-hint {
+        background: linear-gradient(135deg, #1e3a5f 0%, #172554 100%);
+        border-color: #3b82f6;
+    }
+
+    [data-theme="dark"] .keywords-hint h4,
+    [data-theme="dark"] .keywords-hint li {
+        color: #93c5fd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-card">
+    <div class="page-intro">
+        <h1>✨ 创建新故事</h1>
+        <p style="color: var(--gray-500);">输入一些关键词，AI 会为你生成完整的故事世界</p>
+    </div>
+
+    <div class="card" style="padding: 2rem;">
+        <div class="keywords-hint">
+            <h4>💡 关键词说明</h4>
+            <ul>
+                <li>输入与故事主题相关的关键词，用逗号分隔</li>
+                <li>可以包括：题材、元素、角色类型���情感标签等</li>
+                <li>关键词越多越详细，生成的故事越符合预期</li>
+            </ul>
+            <div class="example-tags">
+                <span class="example-tag" onclick="addKeyword('校园恋爱')">校园恋爱</span>
+                <span class="example-tag" onclick="addKeyword('初恋')">初恋</span>
+                <span class="example-tag" onclick="addKeyword('白月光')">白月光</span>
+                <span class="example-tag" onclick="addKeyword('师生恋')">师生恋</span>
+                <span class="example-tag" onclick="addKeyword('重生')">重生</span>
+                <span class="example-tag" onclick="addKeyword('复仇')">复仇</span>
+                <span class="example-tag" onclick="addKeyword('末世')">末世</span>
+                <span class="example-tag" onclick="addKeyword('修仙')">修仙</span>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('story.create_story') }}" id="create-form">
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="icon">🏷️</span>
+                    故���关键词
+                </label>
+                <textarea
+                    id="keywords"
+                    name="keywords"
+                    rows="3"
+                    class="form-input"
+                    placeholder="例如：校园恋爱，初恋，白月光，老师，师生恋&#10;或者：末世生存，变异生物，幸存者基地"
+                    required
+                ></textarea>
+                <div class="form-hint">* 用逗号分隔多个关键词</div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                <button type="submit" class="btn btn-ai" style="flex: 1;">
+                    ✨ AI 生成故事
+                </button>
+                <a href="{{ url_for('story.index') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">AI 正在创作故事世界...</div>
+    <div class="loading-subtext">这可能需要几秒钟时间</div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+function addKeyword(keyword) {
+    const textarea = document.getElementById('keywords');
+    if (textarea.value) {
+        textarea.value += ', ' + keyword;
+    } else {
+        textarea.value = keyword;
+    }
+}
+
+document.getElementById('create-form').addEventListener('submit', function() {
+    document.getElementById('loading').classList.add('active');
+});
+</script>
+{% endblock %}

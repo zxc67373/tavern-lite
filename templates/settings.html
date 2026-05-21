@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}API 设置 - Tavern Lite{% endblock %}
+
+{% block extra_style %}
+<style>
+    .settings-card {
+        background: var(--white-card);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .settings-card h2 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+
+    .current-config-info {
+        color: var(--gray-400);
+        margin-bottom: 1.5rem;
+    }
+
+    .current-config-info strong {
+        color: var(--primary);
+    }
+
+    .config-card {
+        background: var(--gray-50);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+    }
+
+    .config-card:hover {
+        border-color: var(--primary-light);
+    }
+
+    .config-card.current {
+        border-color: var(--success);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+    }
+
+    .config-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .config-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--dark-text);
+    }
+
+    .config-url {
+        color: var(--gray-400);
+        font-size: 0.875rem;
+        word-break: break-all;
+        margin-bottom: 0.5rem;
+    }
+
+    .config-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .config-actions button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .config-actions button:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-use {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: #fff;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        color: #fff;
+    }
+
+    .current-badge {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .model-info {
+        font-size: 0.875rem;
+        color: var(--gray-400);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .model-info strong {
+        color: var(--primary);
+    }
+
+    .stream-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .stream-badge.on {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+
+    .stream-badge.off {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+
+    [data-theme="dark"] .stream-badge.on {
+        background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+        color: #6ee7b7;
+    }
+
+    [data-theme="dark"] .stream-badge.off {
+        background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+        color: #fcd34d;
+    }
+
+    .add-config-form {
+        background: var(--gray-50);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .add-config-form h3 {
+        margin-top: 0;
+        margin-bottom: 1.25rem;
+        color: var(--dark-text);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    [data-theme="dark"] .form-row input,
+    [data-theme="dark"] .form-row select {
+        background: var(--gray-100);
+        color: var(--dark-text);
+        border-color: var(--border-color);
+    }
+
+    .form-full {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+        background: var(--white-card);
+        color: var(--dark-text);
+    }
+
+    [data-theme="dark"] .form-full {
+        background: var(--gray-100);
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: #fff;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .btn-add:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .back-link {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: var(--gray-100);
+        color: var(--gray-600);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    [data-theme="dark"] .back-link {
+        background: var(--gray-200);
+        color: var(--gray-100);
+        border-color: var(--gray-400);
+    }
+
+    .back-link:hover {
+        background: var(--gray-200);
+    }
+
+    @media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>API 设置</h1>
+
+<div class="settings-card">
+    <h2>API 配置</h2>
+    <p class="current-config-info">当前使用: <strong>{{ settings.current_config }}</strong></p>
+
+    <div id="configs-list">
+        {% for config in settings.api_configs %}
+        <div class="config-card {% if config.id == settings.current_config %}current{% endif %}" data-id="{{ config.id }}">
+            <div class="config-header">
+                <div>
+                    <span class="config-name">{{ config.name }}</span>
+                    {% if config.id == settings.current_config %}
+                    <span class="current-badge">使用中</span>
+                    {% endif %}
+                </div>
+                <div class="config-actions">
+                    {% if config.id != settings.current_config %}
+                    <button class="btn-use" onclick="useConfig('{{ config.id }}')">使用</button>
+                    {% endif %}
+                    <button class="btn-delete" onclick="deleteConfig('{{ config.id }}')">删除</button>
+                </div>
+            </div>
+            <div class="config-url">{{ config.api_url }}</div>
+            <div class="model-info">
+                <span>Model: <strong>{{ config.model }}</strong></span>
+                <span>max_tokens: {{ config.max_tokens }}</span>
+                <span>temperature: {{ config.temperature }}</span>
+                <span>top_p: {{ config.top_p }}</span>
+                <span class="stream-badge {% if config.stream %}on{% else %}off{% endif %}">
+                    {% if config.stream %}✨ 流式{% else %}📝 非流式{% endif %}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="add-config-form">
+        <h3>添加新 API 配置</h3>
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--dark-text);">配置 ID (用于切换) *</label>
+            <input type="text" id="new-config-id" placeholder="如: glm" class="form-full">
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--dark-text);">显示名称 *</label>
+            <input type="text" id="new-config-name" placeholder="如: GLM API" class="form-full">
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--dark-text);">API 地址 *</label>
+            <input type="text" id="new-config-url" placeholder="如: https://aigw-gzgy2.cucloud.cn:8443/v1" class="form-full">
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--dark-text);">API Key *</label>
+            <input type="password" id="new-config-key" placeholder="API Key" class="form-full">
+        </div>
+        <div class="form-row">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--dark-text);">模型名称 *</label>
+                <input type="text" id="new-config-model" placeholder="如: glm-5.1" class="form-full">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--dark-text);">Max Tokens</label>
+                <input type="number" id="new-config-maxtokens" value="2048" class="form-full">
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--dark-text);">Temperature</label>
+                <input type="number" id="new-config-temperature" value="0.8" step="0.1" min="0" max="2" class="form-full">
+            </div>
+            <div style="display: flex; align-items: flex-end; gap: 1rem;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--dark-text);">Top P</label>
+                    <input type="number" id="new-config-topp" value="0.9" step="0.1" min="0" max="1" class="form-full">
+                </div>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
+                    <input type="checkbox" id="new-config-stream" checked style="width: auto;">
+                    <span style="color: var(--dark-text);">流式输出</span>
+                </label>
+            </div>
+        </div>
+        <button type="button" class="btn-add" onclick="addConfig()">添加配置</button>
+    </div>
+</div>
+
+<div>
+    <a href="{{ url_for('character.index') }}" class="back-link">← 返回</a>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+function useConfig(configId) {
+    fetch(`/settings/api-configs/${configId}/use`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) location.reload();
+        });
+}
+
+function deleteConfig(configId) {
+    if (!confirm('确定删除这个配置？')) return;
+    fetch(`/settings/api-configs/${configId}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.error);
+        });
+}
+
+function addConfig() {
+    const id = document.getElementById('new-config-id').value.trim();
+    const name = document.getElementById('new-config-name').value.trim();
+    const api_url = document.getElementById('new-config-url').value.trim();
+    const api_key = document.getElementById('new-config-key').value.trim();
+    const model = document.getElementById('new-config-model').value.trim();
+    const max_tokens = parseInt(document.getElementById('new-config-maxtokens').value) || 2048;
+    const temperature = parseFloat(document.getElementById('new-config-temperature').value) || 0.8;
+    const top_p = parseFloat(document.getElementById('new-config-topp').value) || 0.9;
+    const stream = document.getElementById('new-config-stream').checked;
+
+    if (!name || !api_url) {
+        alert('名称和API地址不能为空');
+        return;
+    }
+
+    fetch('/settings/api-configs', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id, name, api_url, api_key, model, max_tokens, temperature, top_p, stream })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) location.reload();
+        else alert(data.error);
+    });
+}
+</script>
+{% endblock %}
